@@ -1,8 +1,8 @@
 " Vim indent file
 " Language:         Cobol
 " Author:           Clavelito <maromomo@hotmail.com>
-" Last Change:      Sat, 24 Dec 2022 18:37:17 +0900
-" Version:          0.1-legacy
+" Last Change:      Wed, 04 Jan 2023 04:30:40 +0900
+" Version:          0.2-legacy
 " License:          http://www.apache.org/licenses/LICENSE-2.0
 "
 " Description:      The current line is often indented at line breaks.
@@ -40,13 +40,17 @@ function GetCobolInd()
   endif
   let lnum = prevnonblank(v:lnum - 1)
   let line = getline(lnum)
-  while lnum && (s:Comment(line) || s:Direct(line) || s:Debug(line))
+  let snum = lnum
+  while lnum && (s:Comment(line) && indent(lnum) == s:c_ind || s:Direct(line) || s:Debug(line))
+    if snum == lnum
+      setlocal indentkeys+=<Space>
+    endif
     let lnum = prevnonblank(lnum - 1)
     let line = getline(lnum)
   endwhile
   let pnum = prevnonblank(lnum - 1)
   let pline = getline(pnum)
-  while pnum && (s:Comment(pline) || s:Direct(pline) || s:Debug(pline))
+  while pnum && (s:Comment(pline) && indent(pnum) == s:c_ind || s:Direct(pline) || s:Debug(pline))
     let pnum = prevnonblank(pnum - 1)
     let pline = getline(pnum)
   endwhile
@@ -362,7 +366,7 @@ function s:Muth(line)
 endfunction
 
 function s:Muth2(line)
-  return a:line =~ '^[ ]\{' .s:b_ind .',}\%([-+*/=]\|[*][*]\)'
+  return a:line =~ '^[ ]\{' .s:b_ind .',}\%([-+*/=]\|[*][*]\)' && a:line !~? '\sEND-COMPUTE\>' && !s:Dot(a:line)
 endfunction
 
 function s:Not(line)
